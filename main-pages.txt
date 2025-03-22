@@ -1,0 +1,169 @@
+// src/pages/BookingPage.jsx
+import React, { useState, useReducer, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import DestinationSelector from '../components/booking/DestinationSelector';
+import ClassSelector from '../components/booking/ClassSelector';
+import DateSelector from '../components/booking/DateSelector';
+import BookingSummary from '../components/booking/BookingSummary';
+import AccommodationRecommendations from '../components/dashboard/AccommodationRecommendations';
+
+// Initial state for the booking process
+const initialBookingState = {
+  step: 1,
+  destination: null,
+  seatClass: null,
+  departureDate: null,
+  passengers: [{
+    name: '',
+    email: '',
+    specialRequirements: ''
+  }],
+  totalPrice: 0
+};
+
+// Reducer for handling booking state changes
+const bookingReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_DESTINATION':
+      return {
+        ...state,
+        destination: action.payload,
+        step: 2
+      };
+    case 'SET_CLASS':
+      return {
+        ...state,
+        seatClass: action.payload,
+        totalPrice: state.destination.pricing[action.payload] * state.passengers.length,
+        step: 3
+      };
+    case 'SET_DATE':
+      return {
+        ...state,
+        departureDate: action.payload,
+        step: 4
+      };
+    case 'UPDATE_PASSENGER':
+      const updatedPassengers = [...state.passengers];
+      updatedPassengers[action.payload.index] = {
+        ...updatedPassengers[action.payload.index],
+        ...action.payload.data
+      };
+      return {
+        ...state,
+        passengers: updatedPassengers
+      };
+    case 'ADD_PASSENGER':
+      return {
+        ...state,
+        passengers: [...state.passengers, { name: '', email: '', specialRequirements: '' }],
+        totalPrice: state.destination?.pricing[state.seatClass] * (state.passengers.length + 1) || 0
+      };
+    case 'REMOVE_PASSENGER':
+      if (state.passengers.length <= 1) return state;
+      const filteredPassengers = state.passengers.filter((_, index) => index !== action.payload);
+      return {
+        ...state,
+        passengers: filteredPassengers,
+        totalPrice: state.destination?.pricing[state.seatClass] * filteredPassengers.length || 0
+      };
+    case 'GO_TO_STEP':
+      return {
+        ...state,
+        step: action.payload
+      };
+    case 'RESET_BOOKING':
+      return initialBookingState;
+    default:
+      return state;
+  }
+};
+
+const BookingPage = () => {
+  const [bookingState, dispatch] = useReducer(bookingReducer, initialBookingState);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [destinations, setDestinations] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [accommodations, setAccommodations] = useState([]);
+  const [bookingComplete, setBookingComplete] = useState(false);
+  
+  // Sample seat classes
+  const seatClasses = [
+    {
+      type: 'economy',
+      name: 'Economy Class',
+      price: 50000,
+      features: [
+        'Standard gravity stabilization',
+        'Shared viewing area',
+        'Rehydrated meals',
+        'Limited storage space'
+      ]
+    },
+    {
+      type: 'luxury',
+      name: 'Luxury Class',
+      price: 150000,
+      features: [
+        'Enhanced gravity control',
+        'Private viewing window',
+        'Gourmet space cuisine',
+        'Personal storage locker',
+        'Zero-G relaxation pod'
+      ]
+    },
+    {
+      type: 'vip',
+      name: 'VIP Suite',
+      price: 350000,
+      features: [
+        'Customizable gravity settings',
+        'Panoramic viewing dome',
+        'Executive chef service',
+        'Private lounge access',
+        'Exclusive EVA opportunity',
+        'Dedicated concierge'
+      ]
+    }
+  ];
+  
+  // Fetch destinations data (mock implementation)
+  useEffect(() => {
+    // In a real app, this would be an API call
+    const fetchDestinations = async () => {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock data
+      const mockDestinations = [
+        {
+          _id: 'd1',
+          name: 'Lunar Hotel',
+          description: 'Experience luxury on the surface of the Moon with breathtaking Earth views and low-gravity recreational activities.',
+          imageUrl: '/api/placeholder/800/500',
+          distance: '384,400',
+          duration: 72,
+          pricing: {
+            economy: 50000,
+            luxury: 150000,
+            vip: 350000
+          },
+          availableSeats: {
+            economy: 42,
+            luxury: 16,
+            vip: 3
+          },
+          nextAvailable: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          mapPosition: { x: 35, y: 45 }
+        },
+        {
+          _id: 'd2',
+          name: 'Orbital Station',
+          description: 'Circle the Earth every 90 minutes in this state-of-the-art space station with research facilities and zero-gravity entertainment.',
+          imageUrl: '/api/placeholder/800/500',
+          distance: '420',
+          duration: 24,
+          pricing: {
+            economy: 35000,
+            luxury: 95000,
+            v

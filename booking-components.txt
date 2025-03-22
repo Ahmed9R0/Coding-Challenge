@@ -1,0 +1,435 @@
+// src/components/booking/DestinationSelector.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const DestinationSelector = ({ destinations, selectedDestination, onSelect }) => {
+  return (
+    <div className="space-destination-selector">
+      <h2 className="text-2xl font-orbitron text-cyan-400 mb-6">Select Your Destination</h2>
+      
+      {/* Interactive Solar System Map */}
+      <div className="solar-system-map relative w-full h-96 bg-gradient-to-b from-purple-900/30 to-blue-900/30 rounded-lg mb-8">
+        {destinations.map((destination) => (
+          <motion.div
+            key={destination._id}
+            className={`destination-point absolute cursor-pointer ${
+              selectedDestination?._id === destination._id ? 'ring-2 ring-cyan-400' : ''
+            }`}
+            style={{
+              left: `${destination.mapPosition.x}%`,
+              top: `${destination.mapPosition.y}%`,
+            }}
+            whileHover={{ scale: 1.2 }}
+            onClick={() => onSelect(destination)}
+          >
+            <div className="w-16 h-16 rounded-full overflow-hidden">
+              <img 
+                src={destination.imageUrl} 
+                alt={destination.name} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+              <span className="text-white font-orbitron text-sm">{destination.name}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      
+      {/* Destination Cards as Fallback/Alternative */}
+      <div className="destination-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {destinations.map((destination) => (
+          <motion.div
+            key={destination._id}
+            className={`destination-card p-4 rounded-lg cursor-pointer bg-gray-800/50 backdrop-blur-sm border border-gray-700 ${
+              selectedDestination?._id === destination._id ? 'border-cyan-400' : 'border-transparent'
+            }`}
+            whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(14, 255, 224, 0.3)' }}
+            onClick={() => onSelect(destination)}
+          >
+            <div className="h-32 mb-4 overflow-hidden rounded">
+              <img src={destination.imageUrl} alt={destination.name} className="w-full h-full object-cover" />
+            </div>
+            <h3 className="text-lg font-orbitron text-white">{destination.name}</h3>
+            <p className="text-gray-300 text-sm">{destination.description.substring(0, 100)}...</p>
+            <div className="mt-2 flex justify-between items-center">
+              <span className="text-cyan-400 font-bold">From ${destination.pricing.economy.toLocaleString()}</span>
+              <span className="text-purple-300 text-sm">{destination.duration}h journey</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+      
+      {/* Selected Destination Details */}
+      {selectedDestination && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="selected-destination-details mt-8 p-6 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-purple-500"
+        >
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="md:w-1/3">
+              <img 
+                src={selectedDestination.imageUrl} 
+                alt={selectedDestination.name} 
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            </div>
+            <div className="md:w-2/3">
+              <h3 className="text-2xl font-orbitron text-white mb-2">{selectedDestination.name}</h3>
+              <p className="text-gray-300 mb-4">{selectedDestination.description}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-purple-300 text-sm">Duration</h4>
+                  <p className="text-white">{selectedDestination.duration} hours</p>
+                </div>
+                <div>
+                  <h4 className="text-purple-300 text-sm">Distance</h4>
+                  <p className="text-white">{selectedDestination.distance} km</p>
+                </div>
+                <div>
+                  <h4 className="text-purple-300 text-sm">Starting From</h4>
+                  <p className="text-cyan-400 font-bold">${selectedDestination.pricing.economy.toLocaleString()}</p>
+                </div>
+                <div>
+                  <h4 className="text-purple-300 text-sm">Next Available</h4>
+                  <p className="text-white">{new Date(selectedDestination.nextAvailable).toLocaleDateString()}</p>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-6 px-6 py-2 bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-orbitron rounded-full"
+                onClick={() => onSelect(selectedDestination)}
+              >
+                Select This Destination
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+// src/components/booking/ClassSelector.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const ClassSelector = ({ classes, selectedClass, onSelect, destination }) => {
+  return (
+    <div className="space-class-selector">
+      <h2 className="text-2xl font-orbitron text-cyan-400 mb-6">Select Your Seat Class</h2>
+      
+      <div className="seat-classes grid grid-cols-1 md:grid-cols-3 gap-6">
+        {classes.map((seatClass) => (
+          <motion.div
+            key={seatClass.type}
+            className={`class-card relative p-6 rounded-lg cursor-pointer overflow-hidden ${
+              selectedClass === seatClass.type ? 'ring-2 ring-cyan-400' : ''
+            }`}
+            style={{
+              backgroundColor: 'rgba(26, 26, 46, 0.8)',
+              backdropFilter: 'blur(8px)'
+            }}
+            whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(14, 255, 224, 0.3)' }}
+            onClick={() => onSelect(seatClass.type)}
+          >
+            {/* Background Accent */}
+            <div 
+              className="absolute top-0 right-0 w-24 h-24 opacity-10"
+              style={{
+                background: seatClass.type === 'economy' ? 'radial-gradient(circle, #0EFFE0, transparent)' :
+                           seatClass.type === 'luxury' ? 'radial-gradient(circle, #A239EA, transparent)' :
+                           'radial-gradient(circle, #FFD700, transparent)'
+              }}
+            />
+            
+            <h3 className="text-xl font-orbitron mb-2" style={{
+              color: seatClass.type === 'economy' ? '#0EFFE0' :
+                     seatClass.type === 'luxury' ? '#A239EA' :
+                     '#FFD700'
+            }}>
+              {seatClass.name}
+            </h3>
+            
+            <div className="price-tag mb-4">
+              <span className="text-2xl font-bold text-white">${seatClass.price.toLocaleString()}</span>
+            </div>
+            
+            <div className="features mb-4">
+              <ul className="text-gray-300 text-sm space-y-2">
+                {seatClass.features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="availability mt-4 text-sm text-gray-400">
+              {destination.availableSeats[seatClass.type] > 10 ? (
+                <span>Many seats available</span>
+              ) : destination.availableSeats[seatClass.type] > 0 ? (
+                <span className="text-amber-400">Only {destination.availableSeats[seatClass.type]} seats left</span>
+              ) : (
+                <span className="text-red-400">Sold out</span>
+              )}
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              disabled={destination.availableSeats[seatClass.type] <= 0}
+              className={`mt-4 w-full px-4 py-2 rounded-full font-orbitron text-sm ${
+                destination.availableSeats[seatClass.type] <= 0 
+                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                  : 'bg-gradient-to-r from-purple-600 to-cyan-500 text-white'
+              }`}
+              onClick={() => destination.availableSeats[seatClass.type] > 0 && onSelect(seatClass.type)}
+            >
+              {selectedClass === seatClass.type ? 'Selected' : 'Select Class'}
+            </motion.button>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// src/components/booking/DateSelector.jsx
+import React from 'react';
+import DatePicker from 'react-datepicker';
+import { motion } from 'framer-motion';
+import "react-datepicker/dist/react-datepicker.css";
+
+const DateSelector = ({ selectedDate, onSelect, availableDates, minDate }) => {
+  // Filter only available dates
+  const isAvailableDate = (date) => {
+    return availableDates.some(availableDate => 
+      new Date(availableDate).toDateString() === date.toDateString()
+    );
+  };
+
+  return (
+    <div className="space-date-selector">
+      <h2 className="text-2xl font-orbitron text-cyan-400 mb-6">Select Your Departure Date</h2>
+      
+      <div className="date-picker-container p-6 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-white font-orbitron mb-4">Choose a Date</h3>
+            <div className="custom-datepicker-wrapper">
+              <DatePicker
+                selected={selectedDate}
+                onChange={onSelect}
+                minDate={minDate || new Date()}
+                inline
+                filterDate={isAvailableDate}
+                monthsShown={1}
+                calendarClassName="bg-gray-900 border border-purple-500 rounded-lg shadow-lg p-4"
+                dayClassName={date => 
+                  isAvailableDate(date) 
+                    ? "text-white hover:bg-purple-700 rounded-full" 
+                    : "text-gray-600"
+                }
+                wrapperClassName="w-full"
+              />
+            </div>
+            <p className="text-gray-400 text-sm mt-4">
+              <span className="inline-block w-3 h-3 bg-cyan-400 rounded-full mr-2"></span>
+              Available departure dates
+            </p>
+          </div>
+          
+          <div>
+            <h3 className="text-white font-orbitron mb-4">Upcoming Launches</h3>
+            <div className="upcoming-launches space-y-4">
+              {availableDates.slice(0, 5).map((date, index) => (
+                <motion.div 
+                  key={index}
+                  className={`launch-item p-3 rounded-lg cursor-pointer ${
+                    selectedDate && selectedDate.toDateString() === new Date(date).toDateString()
+                      ? 'bg-purple-900/40 border border-purple-500'
+                      : 'bg-gray-900/40 border border-gray-800 hover:border-gray-700'
+                  }`}
+                  whileHover={{ x: 5 }}
+                  onClick={() => onSelect(new Date(date))}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-white font-medium">
+                        {new Date(date).toLocaleDateString(undefined, { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        {new Date(date).toLocaleTimeString(undefined, {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })} Dubai Time
+                      </p>
+                    </div>
+                    <div className="text-cyan-400">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {selectedDate && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="selected-date-info mt-6 p-4 rounded-lg bg-cyan-900/20 border border-cyan-800"
+              >
+                <h4 className="text-cyan-400 font-orbitron">Selected Launch</h4>
+                <p className="text-white">
+                  {selectedDate.toLocaleDateString(undefined, { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </p>
+                <p className="text-gray-300 text-sm">
+                  {selectedDate.toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })} Dubai Time
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// src/components/booking/BookingSummary.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const BookingSummary = ({ bookingDetails, onConfirm, isProcessing }) => {
+  const { destination, seatClass, departureDate, passengers, totalPrice } = bookingDetails;
+  
+  return (
+    <div className="booking-summary">
+      <h2 className="text-2xl font-orbitron text-cyan-400 mb-6">Review Your Booking</h2>
+      
+      <div className="summary-container p-6 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left: Destination Image */}
+          <div className="lg:col-span-1">
+            <div className="relative h-full min-h-64 overflow-hidden rounded-lg">
+              <img 
+                src={destination.imageUrl} 
+                alt={destination.name} 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                <h3 className="text-white font-orbitron text-xl">{destination.name}</h3>
+              </div>
+            </div>
+          </div>
+          
+          {/* Middle: Booking Details */}
+          <div className="lg:col-span-1">
+            <h3 className="text-white font-orbitron mb-4">Trip Details</h3>
+            <ul className="space-y-4">
+              <li className="flex justify-between">
+                <span className="text-gray-400">Destination:</span>
+                <span className="text-white font-medium">{destination.name}</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Departure:</span>
+                <span className="text-white font-medium">
+                  {departureDate.toLocaleDateString(undefined, { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Travel Duration:</span>
+                <span className="text-white font-medium">{destination.duration} hours</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Class:</span>
+                <span className="text-white font-medium capitalize">{seatClass}</span>
+              </li>
+              <li className="flex justify-between">
+                <span className="text-gray-400">Passengers:</span>
+                <span className="text-white font-medium">{passengers.length}</span>
+              </li>
+            </ul>
+            
+            <div className="mt-6 pt-6 border-t border-gray-700">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Total Price:</span>
+                <span className="text-2xl text-cyan-400 font-bold">${totalPrice.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right: Passenger Info & Confirm Button */}
+          <div className="lg:col-span-1">
+            <h3 className="text-white font-orbitron mb-4">Passenger Information</h3>
+            <div className="space-y-4">
+              {passengers.map((passenger, index) => (
+                <div key={index} className="p-3 rounded-lg bg-gray-900/60 border border-gray-800">
+                  <p className="text-white font-medium">{passenger.name}</p>
+                  <p className="text-gray-400 text-sm">{passenger.email}</p>
+                  {passenger.specialRequirements && (
+                    <p className="text-gray-500 text-xs mt-1">
+                      Special requirements: {passenger.specialRequirements}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isProcessing}
+              className={`mt-8 w-full py-3 rounded-lg font-orbitron text-lg ${
+                isProcessing 
+                  ? 'bg-gray-700 text-gray-300 cursor-wait' 
+                  : 'bg-gradient-to-r from-purple-600 to-cyan-500 text-white'
+              }`}
+              onClick={onConfirm}
+            >
+              {isProcessing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                'Confirm Booking'
+              )}
+            </motion.button>
+            
+            <p className="mt-4 text-center text-gray-400 text-xs">
+              By confirming, you agree to our Terms and Conditions and Privacy Policy.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

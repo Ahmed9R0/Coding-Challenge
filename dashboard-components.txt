@@ -1,0 +1,45 @@
+// src/components/dashboard/UpcomingTrips.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+
+const UpcomingTrips = ({ trips }) => {
+  const getCountdown = (departureDate) => {
+    const now = new Date();
+    const departure = new Date(departureDate);
+    const diffTime = Math.abs(departure - now);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (diffDays > 0) {
+      return `${diffDays} days, ${diffHours} hours`;
+    } else {
+      return `${diffHours} hours`;
+    }
+  };
+
+  return (
+    <div className="upcoming-trips">
+      <h2 className="text-xl font-orbitron text-white mb-4">Upcoming Trips</h2>
+      
+      {trips.length === 0 ? (
+        <div className="empty-state p-6 rounded-lg bg-gray-800/30 border border-gray-700 text-center">
+          <svg className="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          <h3 className="text-gray-400 font-medium mb-2">No Upcoming Trips</h3>
+          <p className="text-gray-500 text-sm">Book your first space adventure today!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {trips.map((trip) => (
+            <motion.div
+              key={trip._id}
+              className="trip-card p-4 rounded-lg bg-gray-800/40 border border-gray-700 overflow-hidden"
+              whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(14, 255, 224, 0.1)' }}
+            >
+              <div className="flex flex-col h-full">
+                <div className="relative h-32 mb-3 rounded overflow-hidden">
+                  <img 
+                    src={trip.destination.imageUrl} 
+                    alt={trip.destination.name} 
+                    className="w-full h-
